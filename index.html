@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panty Cakes Content Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{ font-family:'Fling'; src:url('assets/Fling.otf'); font-display:swap; }
+
+:root{
+  /* warm, tinted neutrals (OKLCH) — never pure black/white */
+  --bg:        oklch(0.968 0.013 72);
+  --surface:   oklch(0.995 0.006 80);
+  --surface-2: oklch(0.945 0.018 60);
+  --ink:       oklch(0.305 0.022 50);
+  --ink-soft:  oklch(0.50 0.02 55);
+  --line:      oklch(0.88 0.02 60);
+  --blush:     oklch(0.82 0.07 5);
+  --pink:      oklch(0.63 0.20 1);     /* brand crimson-pink */
+  --pink-ink:  oklch(0.50 0.20 1);
+  --green:     oklch(0.62 0.12 152);   /* approve */
+  --green-bg:  oklch(0.94 0.05 152);
+  --amber:     oklch(0.74 0.12 70);    /* needs review */
+  --amber-bg:  oklch(0.95 0.05 75);
+  --blue:      oklch(0.62 0.09 240);   /* scheduled */
+  --blue-bg:   oklch(0.95 0.03 240);
+  --shadow: 0 18px 40px -22px oklch(0.4 0.05 40 / 0.45);
+  --radius: 20px;
+  --ease: cubic-bezier(0.23,1,0.32,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{ -webkit-text-size-adjust:100%; }
+body{
+  font-family:'Outfit',system-ui,sans-serif;
+  background:var(--bg); color:var(--ink);
+  font-size:19px; line-height:1.55;
+  padding-bottom:80px;
+}
+.wrap{ max-width:860px; margin:0 auto; padding:0 20px; }
+
+/* ---------- header ---------- */
+header{ background:var(--surface); border-bottom:1px solid var(--line); padding:22px 0; position:sticky; top:0; z-index:20; }
+.head-row{ display:flex; align-items:center; gap:14px; }
+.logo{ display:flex; align-items:center; gap:12px; }
+.logo img{ width:42px; height:42px; object-fit:contain; }
+.logo .name{ font-family:'Fling',cursive; font-size:34px; line-height:1; color:var(--ink); }
+.head-sub{ margin-left:auto; text-align:right; color:var(--ink-soft); font-size:16px; }
+.head-sub strong{ color:var(--ink); display:block; font-size:19px; }
+
+/* ---------- hello + guide ---------- */
+.hello{ padding:30px 0 6px; }
+.hello h1{ font-size:30px; font-weight:700; letter-spacing:-0.01em; }
+.hello p{ color:var(--ink-soft); margin-top:4px; }
+.guide{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px 22px; margin:18px 0 8px; box-shadow:var(--shadow); }
+.guide h2{ font-size:18px; font-weight:600; margin-bottom:10px; }
+.guide ol{ margin:0; padding-left:22px; color:var(--ink-soft); }
+.guide ol li{ margin:6px 0; }
+.guide b{ color:var(--ink); font-weight:600; }
+.pill-inline{ display:inline-block; font-size:14px; font-weight:600; padding:2px 10px; border-radius:999px; }
+.pi-green{ background:var(--green-bg); color:var(--green); }
+.pi-pink{ background:oklch(0.93 0.06 1); color:var(--pink-ink); }
+
+/* ---------- count + filters ---------- */
+.summary{ display:flex; align-items:center; gap:14px; margin:26px 0 12px; flex-wrap:wrap; }
+.summary .big{ font-size:21px; font-weight:700; }
+.filters{ display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+.filter{ font:inherit; font-size:16px; font-weight:600; color:var(--ink-soft);
+  background:var(--surface); border:1px solid var(--line); padding:9px 16px; border-radius:999px;
+  cursor:pointer; transition:transform .16s var(--ease), background .2s, color .2s; }
+.filter:active{ transform:scale(0.97); }
+.filter[aria-pressed="true"]{ background:var(--ink); color:var(--surface); border-color:var(--ink); }
+
+/* ---------- post list ---------- */
+.list{ display:flex; flex-direction:column; gap:16px; margin-top:4px; }
+.post{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden; display:grid; grid-template-columns:150px 1fr; }
+@media (max-width:600px){ .post{ grid-template-columns:1fr; } }
+.thumb{ position:relative; background:var(--surface-2); aspect-ratio:4/5; cursor:pointer; }
+.thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.thumb .count-tag{ position:absolute; top:10px; right:10px; background:oklch(0.3 0.02 50 / .82); color:#fff;
+  font-size:13px; font-weight:600; padding:3px 9px; border-radius:999px; }
+.thumb .view-hint{ position:absolute; inset:auto 0 0 0; background:linear-gradient(transparent, oklch(0.3 0.02 50 / .55));
+  color:#fff; font-size:14px; font-weight:600; text-align:center; padding:18px 0 8px; }
+.body{ padding:18px 20px 20px; display:flex; flex-direction:column; }
+.meta-top{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.type{ font-size:14px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); }
+.post h3{ font-size:21px; font-weight:600; letter-spacing:-0.01em; line-height:1.25; }
+.go-live{ color:var(--ink-soft); font-size:16px; margin-top:4px; }
+.go-live b{ color:var(--ink); }
+.caption{ font-size:16px; color:var(--ink-soft); margin-top:10px; max-height:3.2em; overflow:hidden;
+  position:relative; transition:max-height .3s var(--ease); }
+.caption.open{ max-height:600px; }
+.cap-toggle{ background:none; border:none; color:var(--pink-ink); font:inherit; font-size:15px;
+  font-weight:600; cursor:pointer; padding:4px 0; }
+
+/* status pill */
+.status{ display:inline-flex; align-items:center; gap:7px; font-size:15px; font-weight:600;
+  padding:6px 13px; border-radius:999px; align-self:flex-start; margin-top:2px; }
+.dot{ width:9px; height:9px; border-radius:50%; }
+.st-review{ background:var(--amber-bg); color:oklch(0.45 0.10 60); } .st-review .dot{ background:var(--amber); }
+.st-approved{ background:var(--green-bg); color:oklch(0.42 0.11 152); } .st-approved .dot{ background:var(--green); }
+.st-scheduled{ background:var(--blue-bg); color:oklch(0.45 0.09 240); } .st-scheduled .dot{ background:var(--blue); }
+.st-edit{ background:oklch(0.93 0.06 1); color:var(--pink-ink); } .st-edit .dot{ background:var(--pink); }
+.st-posted{ background:var(--surface-2); color:var(--ink-soft); } .st-posted .dot{ background:var(--ink-soft); }
+
+/* countdown */
+.window{ display:flex; align-items:center; gap:8px; margin-top:14px; font-size:16px; color:var(--ink-soft); }
+.window svg{ width:18px; height:18px; flex:none; }
+.window b{ color:var(--ink); }
+
+/* actions */
+.actions{ display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+.btn{ font:inherit; font-size:17px; font-weight:600; border-radius:14px; padding:13px 20px; cursor:pointer;
+  border:1px solid transparent; transition:transform .16s var(--ease), background .2s, box-shadow .2s; }
+.btn:active{ transform:scale(0.98); }
+.btn-approve{ background:var(--green); color:#fff; }
+.btn-approve:hover{ box-shadow:0 8px 18px -8px var(--green); }
+.btn-edit{ background:var(--surface); color:var(--ink); border-color:var(--line); }
+.btn-edit:hover{ background:var(--surface-2); }
+.btn-view{ background:var(--surface); color:var(--pink-ink); border-color:oklch(0.85 0.08 1); }
+.locked-note{ margin-top:14px; font-size:16px; color:var(--ink-soft); }
+.locked-note b{ color:var(--ink); }
+
+/* edit box */
+.editbox{ margin-top:14px; display:none; }
+.editbox.open{ display:block; }
+.editbox label{ display:block; font-size:16px; font-weight:600; margin-bottom:6px; }
+.editbox textarea{ width:100%; min-height:96px; font:inherit; font-size:17px; padding:12px 14px;
+  border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); resize:vertical; }
+.editbox textarea:focus{ outline:2px solid var(--pink); outline-offset:1px; }
+.editbox .row{ display:flex; gap:10px; margin-top:10px; }
+.btn-send{ background:var(--pink); color:#fff; } .btn-cancel{ background:var(--surface); border-color:var(--line); color:var(--ink); }
+
+/* ---------- lightbox ---------- */
+.lb{ position:fixed; inset:0; background:oklch(0.28 0.02 50 / .78); display:none; z-index:60;
+  align-items:center; justify-content:center; padding:24px; }
+.lb.open{ display:flex; }
+.lb-inner{ position:relative; max-width:520px; width:100%; }
+.lb-img{ width:100%; border-radius:14px; display:block; box-shadow:0 30px 60px -20px oklch(0.2 0.05 40 / .7); }
+.lb-nav{ position:absolute; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:50%;
+  background:var(--surface); border:none; cursor:pointer; font-size:24px; color:var(--ink); box-shadow:var(--shadow);
+  display:flex; align-items:center; justify-content:center; transition:transform .16s var(--ease); }
+.lb-nav:active{ transform:translateY(-50%) scale(0.94); }
+.lb-prev{ left:-22px; } .lb-next{ right:-22px; }
+@media (max-width:600px){ .lb-prev{ left:6px; } .lb-next{ right:6px; } }
+.lb-close{ position:absolute; top:-52px; right:0; background:var(--surface); border:none; border-radius:999px;
+  padding:9px 18px; font:inherit; font-weight:600; cursor:pointer; color:var(--ink); }
+.lb-counter{ text-align:center; color:#fff; margin-top:14px; font-size:16px; letter-spacing:.05em; }
+
+/* ---------- toast ---------- */
+.toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:var(--surface); padding:15px 24px; border-radius:14px; font-weight:600;
+  box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .25s var(--ease), transform .25s var(--ease); z-index:80; }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+footer{ text-align:center; color:var(--ink-soft); font-size:16px; margin-top:40px; }
+footer a{ color:var(--pink-ink); font-weight:600; text-decoration:none; }
+
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="logo">
+      <img src="assets/crest.png" alt="">
+      <span class="name">Panty Cakes</span>
+    </div>
+    <div class="head-sub">
+      Content Studio
+      <strong>by Taylormade Creative</strong>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hello">
+    <h1>Hi Kenitha</h1>
+    <p>Here is the content we made for you this week. Take a look and let us know.</p>
+  </div>
+
+  <section class="guide" aria-label="How this works">
+    <h2>How this works</h2>
+    <ol>
+      <li>Tap a picture to see the whole post, slide by slide.</li>
+      <li>If you love it, tap <span class="pill-inline pi-green">Approve</span>. If you want something changed, tap <span class="pill-inline pi-pink">Request a change</span> and type what you'd like.</li>
+      <li>You have <b>48 hours</b> to make changes. After that, the post goes live on its scheduled day. Approving early is always fine.</li>
+    </ol>
+  </section>
+
+  <div class="summary">
+    <span class="big" id="reviewCount">&nbsp;</span>
+    <div class="filters" role="group" aria-label="Filter posts">
+      <button class="filter" data-filter="all" aria-pressed="true">All</button>
+      <button class="filter" data-filter="review" aria-pressed="false">Needs your review</button>
+      <button class="filter" data-filter="approved" aria-pressed="false">Approved</button>
+      <button class="filter" data-filter="scheduled" aria-pressed="false">Scheduled</button>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <footer>
+    Questions about anything here? Text Nelson at <a href="tel:+18177071291">(817) 707-1291</a>.
+  </footer>
+</main>
+
+<!-- lightbox -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Post preview">
+  <div class="lb-inner">
+    <button class="lb-close" id="lbClose">Close</button>
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous slide">&#8249;</button>
+    <img class="lb-img" id="lbImg" src="" alt="Post slide">
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Next slide">&#8250;</button>
+    <div class="lb-counter" id="lbCounter"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ DATA — Nelson edits this list as we make content ============ */
+const HOURS = 36e5;
+const now = Date.now();
+const dayMs = 864e5;
+
+const POSTS = [
+  {
+    id:"car01",
+    type:"Carousel",
+    platform:"Instagram",
+    title:"It smells like cake. It's actually for this.",
+    goLive: now + 5*dayMs,                 // scheduled date
+    deliveredAt: now - 2*HOURS,            // 48h window starts here
+    slides:["content/carousel-01/slide-s1.png","content/carousel-01/slide-s2.png","content/carousel-01/slide-s3.png","content/carousel-01/slide-s4.png","content/carousel-01/slide-s5.png","content/carousel-01/slide-s6.png"],
+    caption:"It smells like dessert. It is actually clean, pH-balanced feminine care that works with your body. Four natural ingredients, zero chemicals, loved since 2013. Swipe to see why coconut oil and pH balance matter, then meet the elixir women keep coming back for.\n\nShop the link in bio.",
+    status:"review"
+  },
+  {
+    id:"reel01",
+    type:"Reel",
+    platform:"Instagram",
+    title:"Why coconut oil actually works (the science)",
+    goLive: now + 7*dayMs,
+    deliveredAt: now - 1*HOURS,
+    slides:[],
+    caption:"A 30 second explainer: lauric acid, monolaurin, and why Panty Cakes keeps you fresh and balanced. Saves and shares welcome.",
+    status:"review"
+  },
+  {
+    id:"car02",
+    type:"Carousel",
+    platform:"Instagram",
+    title:"Which Panty Cakes is right for you?",
+    goLive: now + 9*dayMs,
+    deliveredAt: now - 30*HOURS,
+    slides:[],
+    caption:"New here? Start with the right size. A simple guide to the .5oz, the 2oz, the Refill, and the bestselling Sets.",
+    status:"approved"
+  },
+  {
+    id:"reel02",
+    type:"Reel",
+    platform:"Instagram",
+    title:"From Stop Six to US Weekly",
+    goLive: now + 12*dayMs,
+    deliveredAt: now - 60*HOURS,           // window already closed -> scheduled
+    slides:[],
+    caption:"Your story, in your words. How Panty Cakes grew from a Fort Worth kitchen into a brand featured in US Weekly and Urban Outfitters.",
+    status:"scheduled"
+  }
+];
+
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const listEl = $("#list");
+const toastEl = $("#toast");
+let activeFilter = "all";
+
+function load(){ try{ return JSON.parse(localStorage.getItem("pc_decisions")||"{}"); }catch(e){ return {}; } }
+function save(d){ localStorage.setItem("pc_decisions", JSON.stringify(d)); }
+let decisions = load();
+
+function statusOf(p){
+  const d = decisions[p.id];
+  if(d && d.status) return d.status;
+  // auto-advance: review window closed with no action -> scheduled
+  if(p.status==="review" && (now - p.deliveredAt) > 48*HOURS) return "scheduled";
+  return p.status;
+}
+function windowLeft(p){
+  const ms = 48*HOURS - (now - p.deliveredAt);
+  return ms;
+}
+function fmtDate(ts){
+  return new Date(ts).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+}
+function fmtLeft(ms){
+  if(ms<=0) return "Closed";
+  const h = Math.floor(ms/HOURS);
+  if(h>=24){ const d=Math.floor(h/24); const rh=h%24; return d+" day"+(d>1?"s":"")+(rh?" "+rh+"h":"")+" left"; }
+  if(h>=1) return h+" hour"+(h>1?"s":"")+" left";
+  return Math.max(1,Math.floor(ms/6e4))+" min left";
+}
+const STATUS_LABEL = { review:"Needs your review", approved:"Approved", scheduled:"Scheduled", edit:"Change requested", posted:"Posted" };
+
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove("show"),2600); }
+
+/* ============ render ============ */
+function render(){
+  const items = POSTS.filter(p=>{
+    const s = statusOf(p);
+    if(activeFilter==="all") return true;
+    if(activeFilter==="review") return s==="review"||s==="edit";
+    return s===activeFilter;
+  });
+  const reviewN = POSTS.filter(p=>statusOf(p)==="review").length;
+  $("#reviewCount").textContent = reviewN>0 ? (reviewN+" post"+(reviewN>1?"s":"")+" waiting for you") : "You're all caught up";
+
+  listEl.innerHTML = "";
+  if(items.length===0){
+    listEl.innerHTML = '<div style="text-align:center;color:var(--ink-soft);padding:40px;background:var(--surface);border:1px solid var(--line);border-radius:20px;">Nothing here right now.</div>';
+    return;
+  }
+  items.forEach(p=>{
+    const s = statusOf(p);
+    const d = decisions[p.id]||{};
+    const hasSlides = p.slides && p.slides.length;
+    const thumb = hasSlides ? p.slides[0] : "";
+    const post = document.createElement("article");
+    post.className="post";
+
+    const thumbHtml = hasSlides
+      ? `<button class="thumb" data-open="${p.id}" aria-label="View ${p.title}">
+           <img src="${thumb}" alt="">
+           <span class="count-tag">${p.slides.length} slides</span>
+           <span class="view-hint">Tap to view</span>
+         </button>`
+      : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--ink-soft);">
+           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="9 7 17 12 9 17 9 7"/><circle cx="12" cy="12" r="10"/></svg>
+           <span style="font-size:14px;">In production</span>
+         </div>`;
+
+    const left = windowLeft(p);
+    let windowHtml = "";
+    if(s==="review"){
+      windowHtml = `<div class="window"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        You can make changes for <b>${fmtLeft(left)}</b></div>`;
+    }
+
+    let actionHtml = "";
+    if(s==="review"){
+      actionHtml = `
+        <div class="actions">
+          ${hasSlides?`<button class="btn btn-view" data-open="${p.id}">View post</button>`:""}
+          <button class="btn btn-approve" data-approve="${p.id}">Approve</button>
+          <button class="btn btn-edit" data-editopen="${p.id}">Request a change</button>
+        </div>
+        <div class="editbox" id="edit-${p.id}">
+          <label for="ta-${p.id}">What would you like changed?</label>
+          <textarea id="ta-${p.id}" placeholder="For example: can we make the pink a little brighter, or change the first line?"></textarea>
+          <div class="row">
+            <button class="btn btn-send" data-editsend="${p.id}">Send to Nelson</button>
+            <button class="btn btn-cancel" data-editcancel="${p.id}">Cancel</button>
+          </div>
+        </div>`;
+    } else if(s==="approved"){
+      actionHtml = `<div class="locked-note">You approved this${d.at?` on <b>${fmtDate(d.at)}</b>`:""}. It will post on <b>${fmtDate(p.goLive)}</b>. ${hasSlides?'<button class="btn btn-view" data-open="'+p.id+'" style="margin-top:10px;">View post</button>':''}</div>`;
+    } else if(s==="edit"){
+      actionHtml = `<div class="locked-note">Your note is with Nelson: <b>&ldquo;${(d.note||"").replace(/</g,"&lt;")}&rdquo;</b><br>He'll send an updated version soon.</div>`;
+    } else if(s==="scheduled"){
+      actionHtml = `<div class="locked-note">Scheduled to post on <b>${fmtDate(p.goLive)}</b>. ${hasSlides?'<button class="btn btn-view" data-open="'+p.id+'" style="margin-top:10px;">View post</button>':''}</div>`;
+    } else if(s==="posted"){
+      actionHtml = `<div class="locked-note">Posted on <b>${fmtDate(p.goLive)}</b>. Thank you.</div>`;
+    }
+
+    post.innerHTML = `
+      ${thumbHtml}
+      <div class="body">
+        <div class="meta-top"><span class="type">${p.type} &middot; ${p.platform}</span></div>
+        <h3>${p.title}</h3>
+        <div class="go-live">Goes live: <b>${fmtDate(p.goLive)}</b></div>
+        <span class="status st-${s}"><span class="dot"></span>${STATUS_LABEL[s]}</span>
+        <div class="caption" id="cap-${p.id}">${p.caption.replace(/\n/g,"<br>")}</div>
+        <button class="cap-toggle" data-cap="${p.id}">Read full caption</button>
+        ${windowHtml}
+        ${actionHtml}
+      </div>`;
+    listEl.appendChild(post);
+  });
+}
+
+/* ============ events ============ */
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-open],[data-approve],[data-editopen],[data-editcancel],[data-editsend],[data-cap],.filter");
+  if(!t) return;
+
+  if(t.dataset.open){ openLightbox(t.dataset.open); }
+  else if(t.dataset.cap){ const c=$("#cap-"+t.dataset.cap); c.classList.toggle("open"); t.textContent=c.classList.contains("open")?"Show less":"Read full caption"; }
+  else if(t.dataset.approve){
+    decisions[t.dataset.approve]={status:"approved", at:Date.now()}; save(decisions); render(); toast("Approved. Thank you, Kenitha.");
+  }
+  else if(t.dataset.editopen){ $("#edit-"+t.dataset.editopen).classList.add("open"); }
+  else if(t.dataset.editcancel){ $("#edit-"+t.dataset.editcancel).classList.remove("open"); }
+  else if(t.dataset.editsend){
+    const id=t.dataset.editsend; const note=$("#ta-"+id).value.trim();
+    if(!note){ $("#ta-"+id).focus(); return; }
+    decisions[id]={status:"edit", note:note, at:Date.now()}; save(decisions); render();
+    toast("Your change request was sent.");
+    // also open a prefilled text to Nelson as a fallback
+    const post = POSTS.find(p=>p.id===id);
+    window.location.href = "sms:+18177071291?&body="+encodeURIComponent('Panty Cakes edit request for "'+post.title+'": '+note);
+  }
+  else if(t.classList.contains("filter")){
+    activeFilter=t.dataset.filter;
+    document.querySelectorAll(".filter").forEach(f=>f.setAttribute("aria-pressed", f===t?"true":"false"));
+    render();
+  }
+});
+
+/* lightbox */
+let lbSlides=[], lbIdx=0;
+function openLightbox(id){
+  const p=POSTS.find(x=>x.id===id); if(!p||!p.slides.length) return;
+  lbSlides=p.slides; lbIdx=0; updateLb(); $("#lb").classList.add("open");
+}
+function updateLb(){ $("#lbImg").src=lbSlides[lbIdx]; $("#lbCounter").textContent=(lbIdx+1)+" of "+lbSlides.length; }
+$("#lbPrev").onclick=()=>{ lbIdx=(lbIdx-1+lbSlides.length)%lbSlides.length; updateLb(); };
+$("#lbNext").onclick=()=>{ lbIdx=(lbIdx+1)%lbSlides.length; updateLb(); };
+$("#lbClose").onclick=()=> $("#lb").classList.remove("open");
+$("#lb").addEventListener("click", e=>{ if(e.target.id==="lb") $("#lb").classList.remove("open"); });
+document.addEventListener("keydown", e=>{
+  if(!$("#lb").classList.contains("open")) return;
+  if(e.key==="Escape") $("#lb").classList.remove("open");
+  if(e.key==="ArrowLeft") $("#lbPrev").click();
+  if(e.key==="ArrowRight") $("#lbNext").click();
+});
+
+render();
+</script>
+</body>
+</html>
