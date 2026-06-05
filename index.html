@@ -308,6 +308,11 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 .dz-ic svg{ width:26px; height:26px; stroke-width:1.8; }
 .dz-big{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; color:var(--ink); }
 .dz-sub{ font-size:14px; color:var(--ink-faint); }
+.dz-steps{ list-style:none; margin:22px auto 0; max-width:520px; display:flex; flex-direction:column; gap:12px; }
+.dz-steps li{ display:flex; align-items:center; gap:13px; font-size:15.5px; color:var(--ink-soft); }
+.dz-steps li b:first-child{ flex:none; width:30px; height:30px; border-radius:50%; background:var(--pink-soft);
+  color:var(--pink-ink); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; }
+.dz-steps li b{ color:var(--ink); font-weight:600; }
 .asset-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
   margin:18px 0 6px; font-size:15px; font-weight:600; color:var(--ink); }
 .asset-actions{ display:flex; gap:9px; }
@@ -477,30 +482,20 @@ nav{ display:flex; flex-direction:column; gap:3px; }
     <section id="viewAssets" hidden>
       <div class="assets-head">
         <h2 class="serif">Brand Assets</h2>
-        <p>Drop in any photos or videos you want Nelson to use, product shots, behind-the-scenes, customer pics, anything. He'll pull from here when making your content.</p>
+        <p>Anything you want Nelson to use, product photos, behind-the-scenes, customer pics, short videos, drop it here. It goes straight to him, privately. No account or login needed.</p>
       </div>
 
-      <label class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
+      <a class="dropzone" href="https://www.dropbox.com/request/59b2hdtqiwrp4gm337nc" target="_blank" rel="noopener">
         <span class="dz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></span>
-        <span class="dz-big">Tap to add photos or videos</span>
-        <span class="dz-sub">Or drag files here from your computer</span>
-      </label>
+        <span class="dz-big">Tap to add photos &amp; videos</span>
+        <span class="dz-sub">Opens your private upload, takes a few seconds</span>
+      </a>
 
-      <div class="asset-bar" id="assetBar" hidden>
-        <span id="assetCount">0 files ready</span>
-        <div class="asset-actions">
-          <button class="btn btn-edit" id="assetClear" style="padding:11px 16px">Clear</button>
-          <button class="btn btn-approve" id="assetSend" style="padding:11px 18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>Send to Nelson</button>
-        </div>
-      </div>
-
-      <div class="asset-grid" id="assetGrid"></div>
-
-      <div class="asset-empty" id="assetEmpty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        <p>Nothing here yet. Add your first photos or videos above.</p>
-      </div>
+      <ol class="dz-steps">
+        <li><b>1</b> Tap the pink box above.</li>
+        <li><b>2</b> Choose photos or videos from your phone or computer.</li>
+        <li><b>3</b> Tap <b>Upload</b>. That's it, Nelson gets them right away.</li>
+      </ol>
     </section>
   </main>
 </div>
@@ -823,46 +818,7 @@ function showView(v){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-/* ============ brand assets uploader ============ */
-let assetFiles=[];
-function renderAssets(){
-  const grid=$("#assetGrid"), bar=$("#assetBar"), empty=$("#assetEmpty");
-  empty.hidden = assetFiles.length>0;
-  bar.hidden = assetFiles.length===0;
-  $("#assetCount").textContent = assetFiles.length+" file"+(assetFiles.length!==1?"s":"")+" ready";
-  grid.innerHTML = assetFiles.map((f,i)=>{
-    const isVid=f.type.startsWith("video");
-    const url=URL.createObjectURL(f);
-    const inner = isVid
-      ? `<div class="vid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="9 7 17 12 9 17 9 7"/><circle cx="12" cy="12" r="10"/></svg><span>${f.name}</span></div>`
-      : `<img src="${url}" alt="">`;
-    return `<div class="asset">${inner}<button class="rm" data-rm="${i}" aria-label="Remove">&times;</button></div>`;
-  }).join("");
-}
-function addFiles(list){
-  for(const f of list){ if(f.type.startsWith("image")||f.type.startsWith("video")) assetFiles.push(f); }
-  renderAssets();
-}
-async function sendAssets(){
-  if(!assetFiles.length) return;
-  if(navigator.canShare && navigator.canShare({files:assetFiles})){
-    try{
-      await navigator.share({ files:assetFiles, title:"Panty Cakes assets", text:"Photos/videos for my content, from Kenitha." });
-      toast("Thanks Kenitha, sending to Nelson.");
-    }catch(e){ /* user cancelled */ }
-  } else {
-    toast("Open this on your phone to send, or email files to taylormademd@gmail.com");
-    window.location.href = "mailto:taylormademd@gmail.com?subject="+encodeURIComponent("Panty Cakes assets from Kenitha")+"&body="+encodeURIComponent("Hi Nelson, attaching photos/videos for you to use. (Please attach the files you just picked.)");
-  }
-}
-const dz=$("#dropzone");
-$("#fileInput").addEventListener("change", e=>{ addFiles(e.target.files); e.target.value=""; });
-["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add("drag"); }));
-["dragleave","drop"].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove("drag"); }));
-dz.addEventListener("drop", e=>{ if(e.dataTransfer&&e.dataTransfer.files) addFiles(e.dataTransfer.files); });
-$("#assetSend").addEventListener("click", sendAssets);
-$("#assetClear").addEventListener("click", ()=>{ assetFiles=[]; renderAssets(); });
-document.addEventListener("click", e=>{ const r=e.target.closest("[data-rm]"); if(r){ assetFiles.splice(+r.dataset.rm,1); renderAssets(); } });
+/* Brand Assets uploads go to a Dropbox File Request (link in the markup) — no JS needed. */
 
 /* ============ events ============ */
 document.addEventListener("click", e=>{
