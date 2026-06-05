@@ -111,6 +111,7 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 /* ============ main ============ */
 .main{ padding:clamp(18px,2.6vw,34px); min-width:0; }
 .mobile-brand{ display:none; }
+.mobile-nav{ display:none; }
 
 .topbar{ display:flex; align-items:flex-start; gap:16px; }
 .greet h1{ font-family:'Fraunces',serif; font-size:clamp(26px,3.4vw,34px); font-weight:600; letter-spacing:-0.01em; }
@@ -292,6 +293,38 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 .lb-close{ position:absolute; top:-50px; right:0; background:var(--surface); border:none; border-radius:999px; padding:9px 18px; font-weight:600; cursor:pointer; color:var(--ink); }
 .lb-counter{ text-align:center; color:#fff; margin-top:14px; font-size:14px; letter-spacing:.05em; }
 
+/* ============ brand assets ============ */
+.assets-head{ margin:28px 0 18px; }
+.assets-head h2{ font-size:clamp(24px,3vw,30px); font-weight:600; letter-spacing:-0.01em; }
+.assets-head p{ color:var(--ink-soft); margin-top:6px; max-width:62ch; font-size:15.5px; }
+.dropzone{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  text-align:center; padding:44px 24px; border:2px dashed var(--pink-line); border-radius:var(--r-lg);
+  background:var(--surface); cursor:pointer; transition:background .2s var(--ease), border-color .2s var(--ease), transform .14s var(--ease); }
+.dropzone:hover{ background:var(--pink-soft); }
+.dropzone.drag{ background:var(--pink-soft); border-color:var(--pink); }
+.dropzone:active{ transform:scale(0.995); }
+.dz-ic{ width:58px; height:58px; border-radius:50%; background:var(--pink-soft); color:var(--pink-ink);
+  display:flex; align-items:center; justify-content:center; }
+.dz-ic svg{ width:26px; height:26px; stroke-width:1.8; }
+.dz-big{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; color:var(--ink); }
+.dz-sub{ font-size:14px; color:var(--ink-faint); }
+.asset-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  margin:18px 0 6px; font-size:15px; font-weight:600; color:var(--ink); }
+.asset-actions{ display:flex; gap:9px; }
+.asset-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px; margin-top:16px; }
+.asset{ position:relative; border-radius:var(--r); overflow:hidden; border:1px solid var(--line); background:var(--surface-2); aspect-ratio:1; }
+.asset img,.asset video{ width:100%; height:100%; object-fit:cover; display:block; }
+.asset .vid{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--ink-soft); padding:10px; }
+.asset .vid svg{ width:30px; height:30px; stroke-width:1.5; }
+.asset .vid span{ font-size:11px; text-align:center; word-break:break-word; line-height:1.3; }
+.asset .rm{ position:absolute; top:7px; right:7px; width:26px; height:26px; border-radius:50%;
+  background:oklch(0.30 0.02 40 / 0.78); color:#fff; border:none; cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center; transition:transform .14s var(--ease); }
+.asset .rm:active{ transform:scale(0.9); }
+.asset-empty{ text-align:center; color:var(--ink-faint); padding:36px 0; }
+.asset-empty svg{ width:42px; height:42px; stroke-width:1.4; margin-bottom:8px; }
+.asset-empty p{ font-size:15px; }
+
 /* ============ toast ============ */
 .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
   background:var(--ink); color:var(--surface); padding:14px 24px; border-radius:14px; font-weight:600;
@@ -302,9 +335,14 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 @media (max-width:1080px){
   .shell{ grid-template-columns:1fr; }
   .sidebar{ display:none; }
-  .mobile-brand{ display:flex; align-items:center; gap:11px; margin-bottom:20px; }
+  .mobile-brand{ display:flex; align-items:center; gap:11px; margin-bottom:14px; }
   .mobile-brand img{ width:40px; height:40px; }
   .mobile-brand .wm{ font-family:'Fling',cursive; font-size:30px; line-height:1; }
+  .mobile-nav{ display:flex; gap:8px; overflow-x:auto; margin-bottom:18px; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
+  .mtab{ flex:none; font-size:14px; font-weight:600; color:var(--ink-soft); background:var(--surface);
+    border:1px solid var(--line); padding:9px 15px; border-radius:999px; cursor:pointer;
+    transition:background .2s, color .2s, border-color .2s; }
+  .mtab[aria-current="true"]{ background:var(--pink-soft); color:var(--pink-ink); border-color:var(--pink-line); }
 }
 @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
 </style>
@@ -350,10 +388,6 @@ nav{ display:flex; flex-direction:column; gap:3px; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
         Analytics
       </button>
-      <button class="nav-item" data-nav="settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2l-.4-2.5H9.8l-.4 2.5a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.5h4.4l.4-2.5a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>
-        Settings
-      </button>
     </nav>
 
     <div class="cal">
@@ -375,6 +409,13 @@ nav{ display:flex; flex-direction:column; gap:3px; }
       <img src="assets/crest.png" alt="">
       <span class="wm">Panty Cakes</span>
     </div>
+    <div class="mobile-nav" aria-label="Sections">
+      <button class="mtab" data-nav="all" aria-current="true">Dashboard</button>
+      <button class="mtab" data-nav="review">Reviews</button>
+      <button class="mtab" data-nav="approved">Approved</button>
+      <button class="mtab" data-nav="scheduled">Scheduled</button>
+      <button class="mtab" data-nav="assets">Brand Assets</button>
+    </div>
 
     <div class="topbar">
       <div class="greet">
@@ -393,6 +434,7 @@ nav{ display:flex; flex-direction:column; gap:3px; }
       </div>
     </div>
 
+    <div id="viewDashboard">
     <!-- stats -->
     <div class="stats" id="stats"></div>
 
@@ -429,6 +471,37 @@ nav{ display:flex; flex-direction:column; gap:3px; }
       </div>
       <div class="lib-grid" id="libGrid"></div>
     </section>
+    </div><!-- /viewDashboard -->
+
+    <!-- ============ BRAND ASSETS (upload) ============ -->
+    <section id="viewAssets" hidden>
+      <div class="assets-head">
+        <h2 class="serif">Brand Assets</h2>
+        <p>Drop in any photos or videos you want Nelson to use, product shots, behind-the-scenes, customer pics, anything. He'll pull from here when making your content.</p>
+      </div>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
+        <span class="dz-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></span>
+        <span class="dz-big">Tap to add photos or videos</span>
+        <span class="dz-sub">Or drag files here from your computer</span>
+      </label>
+
+      <div class="asset-bar" id="assetBar" hidden>
+        <span id="assetCount">0 files ready</span>
+        <div class="asset-actions">
+          <button class="btn btn-edit" id="assetClear" style="padding:11px 16px">Clear</button>
+          <button class="btn btn-approve" id="assetSend" style="padding:11px 18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>Send to Nelson</button>
+        </div>
+      </div>
+
+      <div class="asset-grid" id="assetGrid"></div>
+
+      <div class="asset-empty" id="assetEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <p>Nothing here yet. Add your first photos or videos above.</p>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -456,6 +529,14 @@ const POSTS = [
     goLive: now + 3*dayMs, time:"10:00 AM", deliveredAt: now - 1*HOURS,
     slides:["content/liked-carousel/slide-1.jpg","content/liked-carousel/slide-2.jpg","content/liked-carousel/slide-3.jpg","content/liked-carousel/slide-4.jpg","content/liked-carousel/slide-5.jpg","content/liked-carousel/slide-6.jpg","content/liked-carousel/slide-7.jpg"],
     caption:"Why do 25,000+ women keep buying this little bottle? Because Panty Cakes works WITH your body, not against it. A pH-balanced feminine care oil with 4 clean ingredients that smells like cake, loved since 2013.\n\nSwipe through to see the science, and why harsh soaps are the real problem.\n\nShop the Elixir at mypantycakes.com.",
+    status:"review"
+  },
+  {
+    id:"prodedu01", type:"Carousel", platform:["instagram"],
+    title:"Your feminine-care routine is missing this.",
+    goLive: now + 4*dayMs, time:"11:00 AM", deliveredAt: now - 2*HOURS,
+    slides:["content/product-education/slide-1.jpg","content/product-education/slide-2.jpg","content/product-education/slide-3.jpg","content/product-education/slide-4.jpg","content/product-education/slide-5.jpg","content/product-education/slide-6.jpg","content/product-education/slide-7.jpg"],
+    caption:"Your feminine-care routine is missing this. Panty Cakes is a pH-balanced feminine care oil that actually smells like cake, made for delicate areas with only 4 clean, USDA-organic ingredients.\n\nSwipe to see what it is, why women use it daily, how to use it, and why it has been a self-care staple since 2013. From pits to bra area to down south, Panty Cakes goes first.\n\nReady to have cake? Shop at mypantycakes.com — 1oz $27 · 0.5oz $17 · 3 for $35.",
     status:"review"
   },
   {
@@ -725,9 +806,63 @@ function selectPost(id){ selectedId=id; pvIdx=0; renderPreview(); renderRail(); 
 function setFilter(f){
   activeFilter=f;
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-pressed", t.dataset.filter===f));
-  document.querySelectorAll(".nav-item").forEach(n=>n.setAttribute("aria-current", n.dataset.nav===f?"true":(n.dataset.nav==="all"&&f==="all"?"true":"false")));
+  if(currentView==="dashboard") setActiveNav(f==="all"?"all":f);
   renderAll();
 }
+function setActiveNav(nav){
+  document.querySelectorAll("[data-nav]").forEach(n=>n.setAttribute("aria-current", n.dataset.nav===nav?"true":"false"));
+}
+let currentView="dashboard";
+function showView(v){
+  currentView=v;
+  $("#viewDashboard").hidden = v!=="dashboard";
+  $("#viewAssets").hidden = v!=="assets";
+  document.querySelector(".toolbar").style.display = v==="dashboard"?"":"none";
+  if(v==="assets") setActiveNav("assets");
+  else setActiveNav(activeFilter==="all"?"all":activeFilter);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ============ brand assets uploader ============ */
+let assetFiles=[];
+function renderAssets(){
+  const grid=$("#assetGrid"), bar=$("#assetBar"), empty=$("#assetEmpty");
+  empty.hidden = assetFiles.length>0;
+  bar.hidden = assetFiles.length===0;
+  $("#assetCount").textContent = assetFiles.length+" file"+(assetFiles.length!==1?"s":"")+" ready";
+  grid.innerHTML = assetFiles.map((f,i)=>{
+    const isVid=f.type.startsWith("video");
+    const url=URL.createObjectURL(f);
+    const inner = isVid
+      ? `<div class="vid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="9 7 17 12 9 17 9 7"/><circle cx="12" cy="12" r="10"/></svg><span>${f.name}</span></div>`
+      : `<img src="${url}" alt="">`;
+    return `<div class="asset">${inner}<button class="rm" data-rm="${i}" aria-label="Remove">&times;</button></div>`;
+  }).join("");
+}
+function addFiles(list){
+  for(const f of list){ if(f.type.startsWith("image")||f.type.startsWith("video")) assetFiles.push(f); }
+  renderAssets();
+}
+async function sendAssets(){
+  if(!assetFiles.length) return;
+  if(navigator.canShare && navigator.canShare({files:assetFiles})){
+    try{
+      await navigator.share({ files:assetFiles, title:"Panty Cakes assets", text:"Photos/videos for my content, from Kenitha." });
+      toast("Thanks Kenitha, sending to Nelson.");
+    }catch(e){ /* user cancelled */ }
+  } else {
+    toast("Open this on your phone to send, or email files to taylormademd@gmail.com");
+    window.location.href = "mailto:taylormademd@gmail.com?subject="+encodeURIComponent("Panty Cakes assets from Kenitha")+"&body="+encodeURIComponent("Hi Nelson, attaching photos/videos for you to use. (Please attach the files you just picked.)");
+  }
+}
+const dz=$("#dropzone");
+$("#fileInput").addEventListener("change", e=>{ addFiles(e.target.files); e.target.value=""; });
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add("drag"); }));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove("drag"); }));
+dz.addEventListener("drop", e=>{ if(e.dataTransfer&&e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+$("#assetSend").addEventListener("click", sendAssets);
+$("#assetClear").addEventListener("click", ()=>{ assetFiles=[]; renderAssets(); });
+document.addEventListener("click", e=>{ const r=e.target.closest("[data-rm]"); if(r){ assetFiles.splice(+r.dataset.rm,1); renderAssets(); } });
 
 /* ============ events ============ */
 document.addEventListener("click", e=>{
@@ -762,11 +897,10 @@ document.addEventListener("click", e=>{
   else if(t.dataset.filter!==undefined){ setFilter(t.dataset.filter); }
   else if(t.dataset.nav!==undefined){
     const nav=t.dataset.nav;
-    if(["all","review","approved","scheduled"].includes(nav)){ setFilter(nav); }
-    else if(nav==="calendar"){ setFilter("scheduled"); toast("Showing your scheduled posts."); }
-    else if(nav==="assets"){ toast("Brand Assets — coming soon."); }
-    else if(nav==="analytics"){ toast("Analytics — coming soon."); }
-    else if(nav==="settings"){ toast("Settings — coming soon."); }
+    if(["all","review","approved","scheduled"].includes(nav)){ showView("dashboard"); setFilter(nav); }
+    else if(nav==="calendar"){ showView("dashboard"); setFilter("scheduled"); toast("Showing your scheduled posts."); }
+    else if(nav==="assets"){ showView("assets"); }
+    else if(nav==="analytics"){ showView("dashboard"); toast("Analytics — coming soon."); setActiveNav("analytics"); }
   }
 });
 $("#sort").addEventListener("change", e=>{ sortMode=e.target.value; renderAll(); });
