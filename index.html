@@ -233,6 +233,13 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 .btn-edit:hover{ background:var(--pink-soft); }
 .locked{ margin-top:16px; font-size:14px; color:var(--ink-soft); background:var(--surface-2); border-radius:12px; padding:13px 15px; line-height:1.5; }
 .locked b{ color:var(--ink); }
+.undo-btn{ display:inline-flex; align-items:center; gap:7px; margin-top:11px; background:var(--surface);
+  border:1px solid var(--line); color:var(--pink-ink); font-size:13.5px; font-weight:600;
+  padding:8px 14px; border-radius:11px; cursor:pointer;
+  transition:background .2s var(--ease), border-color .2s, transform .14s var(--ease); }
+.undo-btn svg{ width:15px; height:15px; stroke-width:2; }
+.undo-btn:hover{ background:var(--pink-soft); border-color:var(--pink-line); }
+.undo-btn:active{ transform:scale(0.96); }
 
 .editbox{ display:none; margin-top:14px; }
 .editbox.open{ display:block; }
@@ -522,6 +529,9 @@ const HOURS = 36e5, dayMs = 864e5, now = Date.now();
 /* Schedule anchored to a fixed start so go-live dates don't drift day to day.
    Posts begin the week of Mon Jun 15, 2026 and run ~2 weeks out. */
 const weekStart = new Date(2026, 5, 15, 12, 0, 0).getTime();
+/* How long Kenitha has to review / approve / request changes after delivery.
+   First run: a full week so there's time to get through everything. */
+const REVIEW_WINDOW = 7*24*HOURS;
 
 const POSTS = [
   {
@@ -636,10 +646,10 @@ function saveNotes(){ localStorage.setItem("pc_notes", JSON.stringify(notes)); }
 function statusOf(p){
   const d = decisions[p.id];
   if(d && d.status) return d.status;
-  if(p.status==="review" && (now - p.deliveredAt) > 48*HOURS) return "scheduled";
+  if(p.status==="review" && (now - p.deliveredAt) > REVIEW_WINDOW) return "scheduled";
   return p.status;
 }
-function windowLeft(p){ return 48*HOURS - (now - p.deliveredAt); }
+function windowLeft(p){ return REVIEW_WINDOW - (now - p.deliveredAt); }
 function fmtDate(ts){ return new Date(ts).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
 function fmtShort(ts){ return new Date(ts).toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
 function fmtLeft(ms){
@@ -772,9 +782,11 @@ function renderRail(){
       <div class="row"><button class="btn btn-send" data-editsend="${p.id}">Send to Nelson</button><button class="btn btn-cancel" data-editcancel="1">Cancel</button></div>
     </div>`;
   } else if(s==="approved"){
-    acts=`<div class="locked">You approved this${d.at?` on <b>${fmtShort(d.at)}</b>`:""}. It will post on <b>${fmtDate(p.goLive)}</b>.</div>`;
+    acts=`<div class="locked">You approved this${d.at?` on <b>${fmtShort(d.at)}</b>`:""}. It will post on <b>${fmtDate(p.goLive)}</b>.${d.status?`
+      <button class="undo-btn" data-undo="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7L3 9"/></svg>Undo approval</button>`:""}</div>`;
   } else if(s==="edit"){
-    acts=`<div class="locked">Your note is with Nelson:<br><b>&ldquo;${(d.note||"").replace(/</g,"&lt;")}&rdquo;</b><br>He'll send an updated version soon.</div>`;
+    acts=`<div class="locked">Your note is with Nelson:<br><b>&ldquo;${(d.note||"").replace(/</g,"&lt;")}&rdquo;</b><br>He'll send an updated version soon.${d.status?`
+      <button class="undo-btn" data-undo="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7L3 9"/></svg>Undo change request</button>`:""}</div>`;
   } else if(s==="scheduled"){
     acts=`<div class="locked">Scheduled to post on <b>${fmtDate(p.goLive)}</b>. Nothing else needed from you.</div>`;
   } else if(s==="posted"){
@@ -889,7 +901,7 @@ function showView(v){
 
 /* ============ events ============ */
 document.addEventListener("click", e=>{
-  const t=e.target.closest("[data-select],[data-pv],[data-approve],[data-editopen],[data-editcancel],[data-editsend],[data-cap],[data-step],[data-note],[data-filter],[data-nav]");
+  const t=e.target.closest("[data-select],[data-pv],[data-approve],[data-undo],[data-editopen],[data-editcancel],[data-editsend],[data-cap],[data-step],[data-note],[data-filter],[data-nav]");
   if(!t) return;
 
   if(t.dataset.select!==undefined){ selectPost(t.dataset.select); }
@@ -900,6 +912,7 @@ document.addEventListener("click", e=>{
     i=(i+ (+t.dataset.step) + items.length)%items.length; selectPost(items[i].id);
   }
   else if(t.dataset.approve){ decisions[t.dataset.approve]={status:"approved",at:Date.now()}; saveDec(); toast("Approved. Thank you, Kenitha."); renderAll(); }
+  else if(t.dataset.undo){ delete decisions[t.dataset.undo]; saveDec(); toast("Undone — back to Needs Review."); renderAll(); }
   else if(t.dataset.editopen){ $("#editbox").classList.add("open"); $("#ta").focus(); }
   else if(t.dataset.editcancel){ $("#editbox").classList.remove("open"); }
   else if(t.dataset.editsend){
