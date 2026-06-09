@@ -168,6 +168,7 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 .preview{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:18px; }
 .pv-stage{ position:relative; border-radius:var(--r); overflow:hidden; background:var(--surface-2); aspect-ratio:4/5; max-height:460px; margin:0 auto; }
 .pv-stage img{ width:100%; height:100%; object-fit:contain; display:block; cursor:zoom-in; }
+.pv-stage .pv-video{ width:100%; height:100%; object-fit:contain; display:block; background:oklch(0.20 0.01 40); }
 .pv-empty{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--ink-faint); }
 .pv-empty svg{ width:46px; height:46px; stroke-width:1.4; }
 .pv-arrow{ position:absolute; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:50%;
@@ -270,7 +271,9 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 .card:hover{ box-shadow:var(--shadow); transform:translateY(-2px); }
 .card[aria-current="true"]{ border-color:var(--pink); box-shadow:0 0 0 1px var(--pink); }
 .card .ph{ position:relative; aspect-ratio:4/5; background:var(--surface-2); }
-.card .ph img{ width:100%; height:100%; object-fit:cover; display:block; }
+.card .ph img,.card .ph video{ width:100%; height:100%; object-fit:cover; display:block; }
+.card .ph .playbadge{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+.card .ph .playbadge svg{ width:34px; height:34px; color:#fff; filter:drop-shadow(0 2px 8px oklch(0.20 0.02 40 / 0.55)); }
 .card .ph .noimg{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--ink-faint); }
 .card .ph .noimg svg{ width:30px; height:30px; stroke-width:1.4; }
 .card .ph .chip{ position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px; }
@@ -516,12 +519,15 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 <script>
 /* ============ DATA — Nelson edits this list as content is made ============ */
 const HOURS = 36e5, dayMs = 864e5, now = Date.now();
+/* Schedule anchored to a fixed start so go-live dates don't drift day to day.
+   Posts begin the week of Mon Jun 15, 2026 and run ~2 weeks out. */
+const weekStart = new Date(2026, 5, 15, 12, 0, 0).getTime();
 
 const POSTS = [
   {
     id:"liked01", type:"Carousel", platform:["instagram"],
     title:"Why do 25,000+ women keep buying this little bottle?",
-    goLive: now + 3*dayMs, time:"10:00 AM", deliveredAt: now - 1*HOURS,
+    goLive: weekStart + 1*dayMs, time:"10:00 AM", deliveredAt: now - 1*HOURS,
     slides:["content/liked-carousel/slide-1.jpg","content/liked-carousel/slide-2.jpg","content/liked-carousel/slide-3.jpg","content/liked-carousel/slide-4.jpg","content/liked-carousel/slide-5.jpg","content/liked-carousel/slide-6.jpg","content/liked-carousel/slide-7.jpg"],
     caption:"Why do 25,000+ women keep buying this little bottle? Because Panty Cakes works WITH your body, not against it. A pH-balanced feminine care oil with 4 clean ingredients that smells like cake, loved since 2013.\n\nSwipe through to see the science, and why harsh soaps are the real problem.\n\nShop the Elixir at mypantycakes.com.",
     status:"review"
@@ -529,7 +535,7 @@ const POSTS = [
   {
     id:"prodedu01", type:"Carousel", platform:["instagram"],
     title:"Your feminine-care routine is missing this.",
-    goLive: now + 4*dayMs, time:"11:00 AM", deliveredAt: now - 2*HOURS,
+    goLive: weekStart + 2*dayMs, time:"11:00 AM", deliveredAt: now - 2*HOURS,
     slides:["content/product-education/slide-1.jpg","content/product-education/slide-2.jpg","content/product-education/slide-3.jpg","content/product-education/slide-4.jpg","content/product-education/slide-5.jpg","content/product-education/slide-6.jpg","content/product-education/slide-7.jpg"],
     caption:"Your feminine-care routine is missing this. Panty Cakes is a pH-balanced feminine care oil that actually smells like cake, made for delicate areas with only 4 clean, USDA-organic ingredients.\n\nSwipe to see what it is, why women use it daily, how to use it, and why it has been a self-care staple since 2013. From pits to bra area to down south, Panty Cakes goes first.\n\nReady to have cake? Shop at mypantycakes.com — 1oz $27 · 0.5oz $17 · 3 for $35.",
     status:"review"
@@ -537,7 +543,7 @@ const POSTS = [
   {
     id:"c6", type:"Carousel", platform:["instagram"],
     title:"You thought it was just the oil?",
-    goLive: now + 2*dayMs, time:"11:00 AM", deliveredAt: now - 1*HOURS,
+    goLive: weekStart + 0*dayMs, time:"11:00 AM", deliveredAt: now - 1*HOURS,
     slides:["content/c6-lineup/slide-1.jpg","content/c6-lineup/slide-2.jpg","content/c6-lineup/slide-3.jpg","content/c6-lineup/slide-4.jpg","content/c6-lineup/slide-5.jpg","content/c6-lineup/slide-6.jpg","content/c6-lineup/slide-7.jpg"],
     caption:"You thought it was just the oil? Meet the whole Panty Cakes family — the Eau de Parfum, the Body Bar, the Bath Jelly, the Cake Pop Roller, and bundle sets that save. Clean, natural, pH-balanced, and yes, it all smells like cake.\n\nBundle and save: It Takes Two $28, 3 Layer Cake set $45, Have Cake! 4-pc $42, My Aura Set $58. Free shower jelly plus roller on $50+ with code JELLYROLL.\n\nShop the full line at mypantycakes.com.\n\n#FeminineCare #CleanBeauty #SmellsLikeCake #SelfCare #BlackOwned",
     status:"review"
@@ -545,7 +551,7 @@ const POSTS = [
   {
     id:"c3", type:"Carousel", platform:["instagram"],
     title:"Your gym bag is missing this.",
-    goLive: now + 4*dayMs, time:"6:00 PM", deliveredAt: now - 2*HOURS,
+    goLive: weekStart + 2*dayMs, time:"6:00 PM", deliveredAt: now - 2*HOURS,
     slides:["content/c3-workout/slide-1.jpg","content/c3-workout/slide-2.jpg","content/c3-workout/slide-3.jpg","content/c3-workout/slide-4.jpg","content/c3-workout/slide-5.jpg","content/c3-workout/slide-6.jpg","content/c3-workout/slide-7.jpg"],
     caption:"Your gym bag is missing this. Sweat plus tight leggings throws off your natural pH, and that is where odor and irritation start. A few drops of Panty Cakes after your workout keeps you fresh and balanced, working WITH your body instead of stripping it. pH-balanced, 100% natural, smells like cake. Loved since 2013.\n\nShop at mypantycakes.com.\n\n#FeminineCare #PostWorkout #pHBalanced #SmellsLikeCake #SelfCare",
     status:"review"
@@ -553,7 +559,7 @@ const POSTS = [
   {
     id:"c8", type:"Carousel", platform:["instagram"],
     title:"3 things women get wrong about feminine care.",
-    goLive: now + 6*dayMs, time:"12:00 PM", deliveredAt: now - 3*HOURS,
+    goLive: weekStart + 4*dayMs, time:"12:00 PM", deliveredAt: now - 3*HOURS,
     slides:["content/c8-myths/slide-1.jpg","content/c8-myths/slide-2.jpg","content/c8-myths/slide-3.jpg","content/c8-myths/slide-4.jpg","content/c8-myths/slide-5.jpg","content/c8-myths/slide-6.jpg","content/c8-myths/slide-7.jpg"],
     caption:"3 things women get wrong about feminine care. One: washing down there with soap strips your pH past 9. Two: thinking anything scented will irritate — a pH-balanced natural formula will not. Three: believing oils cannot help odor — coconut-derived lauric acid is naturally cleansing. The truth: balance beats stripping, and healthy pH is 3.8 to 4.5. Panty Cakes keeps you there. 4 clean ingredients since 2013.\n\nGet balanced at mypantycakes.com.\n\n#FeminineCare #pHBalance #FemHealth #SmellsLikeCake #WomensWellness",
     status:"review"
@@ -561,7 +567,7 @@ const POSTS = [
   {
     id:"c4", type:"Carousel", platform:["instagram"],
     title:"The last step of your shower.",
-    goLive: now + 9*dayMs, time:"7:00 PM", deliveredAt: now - 4*HOURS,
+    goLive: weekStart + 7*dayMs, time:"7:00 PM", deliveredAt: now - 4*HOURS,
     slides:["content/c4-shower/slide-1.jpg","content/c4-shower/slide-2.jpg","content/c4-shower/slide-3.jpg","content/c4-shower/slide-4.jpg","content/c4-shower/slide-5.jpg","content/c4-shower/slide-6.jpg","content/c4-shower/slide-7.jpg"],
     caption:"The last step of your shower that nobody tells you about. Soap can run your pH past 9, clean for an hour and off-balance by noon. Right after you towel off, lock in fresh with a few drops of Panty Cakes, then pair it with the Shower Jelly for the full ritual. 4 clean ingredients, USDA-organic, smells like cake.\n\nShop at mypantycakes.com.\n\n#FeminineCare #ShowerRoutine #pHBalanced #SelfCareRitual #CleanBeauty",
     status:"review"
@@ -569,7 +575,7 @@ const POSTS = [
   {
     id:"c7", type:"Carousel", platform:["instagram"],
     title:"Why does it smell like cake?",
-    goLive: now + 11*dayMs, time:"5:00 PM", deliveredAt: now - 5*HOURS,
+    goLive: weekStart + 9*dayMs, time:"5:00 PM", deliveredAt: now - 5*HOURS,
     slides:["content/c7-scent/slide-1.jpg","content/c7-scent/slide-2.jpg","content/c7-scent/slide-3.jpg","content/c7-scent/slide-4.jpg","content/c7-scent/slide-5.jpg","content/c7-scent/slide-6.jpg","content/c7-scent/slide-7.jpg"],
     caption:"Why does it smell like cake? Because confidence you can smell is the whole point. Warm vanilla, sweet bakery, never harsh and never medicine-y. Wear the oil for delicate areas and the Eau de Parfum everywhere else for your full Panty Cakes signature. 100% natural, pH-balanced, loved since 2013.\n\nFind your scent at mypantycakes.com.\n\n#EauDeParfum #SmellsLikeCake #FeminineCare #SignatureScent #SelfCare",
     status:"review"
@@ -577,7 +583,7 @@ const POSTS = [
   {
     id:"c5", type:"Carousel", platform:["instagram"],
     title:"Estheticians, your clients keep asking for this.",
-    goLive: now + 13*dayMs, time:"1:00 PM", deliveredAt: now - 6*HOURS,
+    goLive: weekStart + 11*dayMs, time:"1:00 PM", deliveredAt: now - 6*HOURS,
     slides:["content/c5-wax/slide-1.jpg","content/c5-wax/slide-2.jpg","content/c5-wax/slide-3.jpg","content/c5-wax/slide-4.jpg","content/c5-wax/slide-5.jpg","content/c5-wax/slide-6.jpg","content/c5-wax/slide-7.jpg"],
     caption:"Estheticians, your clients keep asking for this. Freshly waxed skin is raw skin — open pores, razor burn, ingrowns. Panty Cakes soothes delicate skin, helps with ingrowns, and keeps the area balanced after waxing or shaving. An easy retail add-on your clients will repurchase.\n\nClients: shop mypantycakes.com. Pros: DM for wholesale.\n\n#Esthetician #WaxingAftercare #IngrownHairs #FeminineCare #SmellsLikeCake",
     status:"review"
@@ -585,7 +591,7 @@ const POSTS = [
   {
     id:"car01", type:"Carousel", platform:["instagram"],
     title:"How to use it: quick, easy, daily.",
-    goLive: now + 5*dayMs, time:"12:00 PM", deliveredAt: now - 2*HOURS,
+    goLive: weekStart + 3*dayMs, time:"12:00 PM", deliveredAt: now - 2*HOURS,
     slides:["content/carousel-01/slide-s1.png","content/carousel-01/slide-s2.png","content/carousel-01/slide-s3.png","content/carousel-01/slide-s4.png","content/carousel-01/slide-s5.png","content/carousel-01/slide-s6.png"],
     caption:"It smells like dessert. It is actually clean, pH-balanced feminine care that works with your body. Four natural ingredients, zero chemicals, loved since 2013.\n\nSwipe to see why coconut oil and pH balance matter, then meet the elixir women keep coming back for.\n\nShop the link in bio.",
     status:"review"
@@ -593,15 +599,15 @@ const POSTS = [
   {
     id:"reel01", type:"Reel", platform:["instagram"],
     title:"Why coconut oil actually works (the science)",
-    goLive: now + 7*dayMs, time:"6:00 PM", deliveredAt: now - 1*HOURS,
-    slides:[],
+    goLive: weekStart + 5*dayMs, time:"6:00 PM", deliveredAt: now - 1*HOURS,
+    slides:[], video:"content/reel-01/reel-1.mp4",
     caption:"A 30 second explainer: lauric acid, monolaurin, and why Panty Cakes keeps you fresh and balanced. Saves and shares welcome.",
     status:"review"
   },
   {
     id:"car02", type:"Carousel", platform:["instagram"],
     title:"Which Panty Cakes is right for you?",
-    goLive: now + 9*dayMs, time:"11:00 AM", deliveredAt: now - 30*HOURS,
+    goLive: weekStart + 7*dayMs, time:"11:00 AM", deliveredAt: now - 30*HOURS,
     slides:[],
     caption:"New here? Start with the right size. A simple guide to the .5oz, the 2oz, the Refill, and the bestselling Sets.",
     status:"approved"
@@ -609,7 +615,7 @@ const POSTS = [
   {
     id:"reel02", type:"Reel", platform:["instagram"],
     title:"From Stop Six to US Weekly",
-    goLive: now + 12*dayMs, time:"7:00 PM", deliveredAt: now - 60*HOURS,
+    goLive: weekStart + 10*dayMs, time:"7:00 PM", deliveredAt: now - 60*HOURS,
     slides:[],
     caption:"Your story, in your words. How Panty Cakes grew from a Fort Worth kitchen into a brand featured in US Weekly and Urban Outfitters.",
     status:"scheduled"
@@ -716,6 +722,10 @@ function renderPreview(){
   const p=POSTS.find(x=>x.id===selectedId);
   const stage=$("#pvStage"), strip=$("#filmstrip");
   if(!p){ stage.innerHTML=""; strip.innerHTML=""; return; }
+  if(p.video){
+    stage.innerHTML=`<video src="${p.video}" controls playsinline preload="metadata" class="pv-video"></video>`;
+    strip.innerHTML=""; return;
+  }
   if(!p.slides.length){
     stage.innerHTML=`<div class="pv-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="9 7 17 12 9 17 9 7"/><circle cx="12" cy="12" r="10"/></svg>
@@ -819,14 +829,23 @@ function renderLibrary(){
   $("#libGrid").innerHTML = items.map(p=>{
     const s=statusOf(p), has=p.slides.length;
     const chipColors={review:"var(--amber-bg);color:oklch(0.46 0.10 60)",approved:"var(--green-bg);color:oklch(0.42 0.11 152)",scheduled:"var(--blue-bg);color:oklch(0.45 0.09 240)",edit:"var(--pink-soft);color:var(--pink-ink)",posted:"var(--surface-2);color:var(--ink-soft)"};
+    let thumb, meta;
+    if(p.video){
+      thumb=`<video src="${p.video}#t=0.1" muted playsinline preload="metadata"></video><div class="playbadge"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="8 5 19 12 8 19 8 5"/></svg></div>`;
+      meta="Video ready";
+    } else if(has){
+      thumb=`<img src="${p.slides[0]}" alt="">`; meta=p.slides.length+" slides";
+    } else {
+      thumb=`<div class="noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="9 7 17 12 9 17 9 7"/><circle cx="12" cy="12" r="10"/></svg></div>`; meta="In production";
+    }
     return `<button class="card" data-select="${p.id}" aria-current="${p.id===selectedId}">
       <div class="ph">
-        ${has?`<img src="${p.slides[0]}" alt="">`:`<div class="noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="9 7 17 12 9 17 9 7"/><circle cx="12" cy="12" r="10"/></svg></div>`}
+        ${thumb}
         <span class="chip" style="background:${chipColors[s]}">${STATUS_LABEL[s]}</span>
       </div>
       <div class="cbody">
         <div class="ct">${p.title}</div>
-        <div class="cm">${p.type} • ${has?p.slides.length+" slides":"In production"} • ${fmtShort(p.goLive)}</div>
+        <div class="cm">${p.type} • ${meta} • ${fmtShort(p.goLive)}</div>
       </div>
     </button>`;
   }).join("");
