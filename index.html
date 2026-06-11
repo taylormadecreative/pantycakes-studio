@@ -249,6 +249,9 @@ nav{ display:flex; flex-direction:column; gap:3px; }
 .editbox textarea:focus{ outline:2px solid var(--pink); outline-offset:1px; }
 .editbox .row{ display:flex; gap:9px; margin-top:9px; }
 .btn-send{ background:var(--pink); color:#fff; flex:1; } .btn-cancel{ background:var(--surface); border-color:var(--line); color:var(--ink); }
+.btn-save{ background:var(--surface); border-color:var(--pink-line); color:var(--pink-ink); }
+.btn-save:hover{ background:var(--pink-soft); }
+.savehint{ font-size:12px; color:var(--ink-faint); margin-top:6px; }
 
 /* notes thread */
 .notes{ margin-top:6px; display:flex; flex-direction:column; gap:10px; }
@@ -640,8 +643,38 @@ let activeFilter = "all", sortMode = "new", selectedId = null, pvIdx = 0;
 function load(k){ try{ return JSON.parse(localStorage.getItem(k)||"{}"); }catch(e){ return {}; } }
 let decisions = load("pc_decisions");
 let notes = load("pc_notes");
+let drafts = load("pc_drafts");
 function saveDec(){ localStorage.setItem("pc_decisions", JSON.stringify(decisions)); }
 function saveNotes(){ localStorage.setItem("pc_notes", JSON.stringify(notes)); }
+function saveDrafts(){ localStorage.setItem("pc_drafts", JSON.stringify(drafts)); }
+
+/* ============ email Kenitha's feedback to Nelson ============ */
+/* FormSubmit alias for taylormademd@gmail.com (keeps the raw address out of page source) */
+const EMAIL_ENDPOINT = "https://formsubmit.co/ajax/26e849255e199a8ebb0e1c1456fe9843";
+async function emailNelson(kind, postTitle, message){
+  try{
+    const r = await fetch(EMAIL_ENDPOINT, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify({
+        _subject: "Panty Cakes dashboard — "+kind+": "+postTitle,
+        _template: "table",
+        _captcha: "false",
+        From: "Kenitha (Panty Cakes dashboard)",
+        Post: postTitle,
+        Type: kind,
+        Message: message,
+        Sent: new Date().toLocaleString("en-US")
+      })
+    });
+    const j = await r.json().catch(()=>({}));
+    return r.ok && (j.success===true || j.success==="true");
+  }catch(e){ return false; }
+}
+/* SMS fallback if email can't go through (offline, blocker, etc.) */
+function smsFallback(kind, postTitle, message){
+  window.location.href = "sms:+18177071291?&body="+encodeURIComponent("Panty Cakes "+kind+' for "'+postTitle+'": '+message);
+}
 
 function statusOf(p){
   const d = decisions[p.id];
@@ -776,10 +809,15 @@ function renderRail(){
       <button class="btn btn-approve" data-approve="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12.5l4 4 10-10.5"/></svg>Approve</button>
       <button class="btn btn-edit" data-editopen="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Request Changes</button>
     </div>
-    <div class="editbox" id="editbox">
+    <div class="editbox${drafts[p.id]?" open":""}" id="editbox">
       <label for="ta">What would you like changed?</label>
-      <textarea id="ta" placeholder="For example: can we make the pink a little brighter, or change the first line?"></textarea>
-      <div class="row"><button class="btn btn-send" data-editsend="${p.id}">Send to Nelson</button><button class="btn btn-cancel" data-editcancel="1">Cancel</button></div>
+      <textarea id="ta" placeholder="For example: can we make the pink a little brighter, or change the first line?">${(drafts[p.id]||"").replace(/</g,"&lt;")}</textarea>
+      <div class="savehint" id="saveHint">${drafts[p.id]?"Draft saved — pick up where you left off.":"Your typing saves automatically on this device."}</div>
+      <div class="row">
+        <button class="btn btn-send" data-editsend="${p.id}">Send to Nelson</button>
+        <button class="btn btn-save" data-editsave="${p.id}">Save</button>
+        <button class="btn btn-cancel" data-editcancel="1">Cancel</button>
+      </div>
     </div>`;
   } else if(s==="approved"){
     acts=`<div class="locked">You approved this${d.at?` on <b>${fmtShort(d.at)}</b>`:""}. It will post on <b>${fmtDate(p.goLive)}</b>.${d.status?`
@@ -901,7 +939,7 @@ function showView(v){
 
 /* ============ events ============ */
 document.addEventListener("click", e=>{
-  const t=e.target.closest("[data-select],[data-pv],[data-approve],[data-undo],[data-editopen],[data-editcancel],[data-editsend],[data-cap],[data-step],[data-note],[data-filter],[data-nav]");
+  const t=e.target.closest("[data-select],[data-pv],[data-approve],[data-undo],[data-editopen],[data-editcancel],[data-editsave],[data-editsend],[data-cap],[data-step],[data-note],[data-filter],[data-nav]");
   if(!t) return;
 
   if(t.dataset.select!==undefined){ selectPost(t.dataset.select); }
@@ -915,20 +953,36 @@ document.addEventListener("click", e=>{
   else if(t.dataset.undo){ delete decisions[t.dataset.undo]; saveDec(); toast("Undone — back to Needs Review."); renderAll(); }
   else if(t.dataset.editopen){ $("#editbox").classList.add("open"); $("#ta").focus(); }
   else if(t.dataset.editcancel){ $("#editbox").classList.remove("open"); }
+  else if(t.dataset.editsave){
+    const id=t.dataset.editsave, txt=$("#ta").value.trim();
+    if(txt){ drafts[id]=txt; } else { delete drafts[id]; }
+    saveDrafts();
+    $("#saveHint").textContent="Saved. Come back anytime — it'll be right here.";
+    toast(txt?"Saved. You can finish this later.":"Cleared.");
+  }
   else if(t.dataset.editsend){
     const id=t.dataset.editsend, note=$("#ta").value.trim();
     if(!note){ $("#ta").focus(); return; }
     decisions[id]={status:"edit",note,at:Date.now()}; saveDec();
-    const p=POSTS.find(x=>x.id===id); toast("Your change request was sent.");
-    window.location.href="sms:+18177071291?&body="+encodeURIComponent('Panty Cakes edit request for "'+p.title+'": '+note);
+    delete drafts[id]; saveDrafts();
+    const p=POSTS.find(x=>x.id===id);
+    toast("Sending to Nelson…");
+    emailNelson("Edit request", p.title, note).then(ok=>{
+      if(ok){ toast("Sent! Nelson got your edit request."); }
+      else { toast("Couldn't reach email — opening text message instead."); smsFallback("edit request", p.title, note); }
+    });
     renderAll();
   }
   else if(t.dataset.note){
     const inp=$("#noteInput"), txt=inp.value.trim(); if(!txt) return;
     const id=t.dataset.note; (notes[id]=notes[id]||[]).push({text:txt,at:Date.now()}); saveNotes();
     const p=POSTS.find(x=>x.id===id);
-    window.location.href="sms:+18177071291?&body="+encodeURIComponent('Panty Cakes note on "'+p.title+'": '+txt);
-    renderRail(); toast("Note sent to Nelson.");
+    toast("Sending note…");
+    emailNelson("Note", p.title, txt).then(ok=>{
+      if(ok){ toast("Note sent to Nelson."); }
+      else { toast("Couldn't reach email — opening text message instead."); smsFallback("note", p.title, txt); }
+    });
+    renderRail();
   }
   else if(t.dataset.filter!==undefined){ setFilter(t.dataset.filter); }
   else if(t.dataset.nav!==undefined){
@@ -939,6 +993,19 @@ document.addEventListener("click", e=>{
     else if(nav==="analytics"){ showView("dashboard"); toast("Analytics — coming soon."); setActiveNav("analytics"); }
   }
 });
+/* auto-save the edit textarea as she types (debounced) */
+let draftTimer=null;
+document.addEventListener("input", e=>{
+  if(e.target.id!=="ta" || !selectedId) return;
+  clearTimeout(draftTimer);
+  const id=selectedId, val=e.target.value;
+  draftTimer=setTimeout(()=>{
+    if(val.trim()){ drafts[id]=val; } else { delete drafts[id]; }
+    saveDrafts();
+    const h=$("#saveHint"); if(h) h.textContent="Draft saved automatically.";
+  }, 600);
+});
+
 $("#sort").addEventListener("change", e=>{ sortMode=e.target.value; renderAll(); });
 $("#bell").addEventListener("click", ()=>{ setFilter("review"); toast(counts().review?"Here's what needs your review.":"You're all caught up."); });
 
