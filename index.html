@@ -535,22 +535,26 @@ const weekStart = new Date(2026, 5, 15, 12, 0, 0).getTime();
 /* How long Kenitha has to review / approve / request changes after delivery.
    First run: a full week so there's time to get through everything. */
 const REVIEW_WINDOW = 7*24*HOURS;
+/* When a post is re-delivered with corrections, stamp revisedAt. Any earlier
+   approve/edit decision Kenitha made is then ignored so the fixed version
+   shows as fresh "Needs Review". */
+const REVISED_AT = new Date(2026, 5, 15, 8, 15, 0).getTime();
 
 const POSTS = [
   {
     id:"liked01", type:"Carousel", platform:["instagram"],
-    title:"Why do 25,000+ women keep buying this little bottle?",
-    goLive: weekStart + 1*dayMs, time:"10:00 AM", deliveredAt: now - 1*HOURS,
-    slides:["content/liked-carousel/slide-1.jpg","content/liked-carousel/slide-2.jpg","content/liked-carousel/slide-3.jpg","content/liked-carousel/slide-4.jpg","content/liked-carousel/slide-5.jpg","content/liked-carousel/slide-6.jpg","content/liked-carousel/slide-7.jpg"],
-    caption:"Why do 25,000+ women keep buying this little bottle? Because Panty Cakes works WITH your body, not against it. A pH-balanced feminine care oil with 4 clean ingredients that smells like cake, loved since 2013.\n\nSwipe through to see the science, and why harsh soaps are the real problem.\n\nShop the Elixir at mypantycakes.com.",
+    title:"Why are over 300,000 loving this little bottle?",
+    goLive: weekStart + 1*dayMs, time:"10:00 AM", deliveredAt: REVISED_AT, revisedAt: REVISED_AT,
+    slides:["content/liked-carousel/slide-1.jpg","content/liked-carousel/slide-2.jpg","content/liked-carousel/slide-3.jpg","content/liked-carousel/slide-4.jpg","content/liked-carousel/slide-5.jpg","content/liked-carousel/slide-6.jpg"],
+    caption:"Why are over 300,000 of these little bottles being loved & enjoyed? Across private label, Urban Outfitters, boutiques, live events and online, Panty Cakes is a pH-balance–conscious personal care enhancer with 4 natural ingredients that smells like cake.\n\nSwipe to see why it works WITH your body and protects your delicate pH balance.\n\nShop at mypantycakes.com.",
     status:"review"
   },
   {
     id:"prodedu01", type:"Carousel", platform:["instagram"],
-    title:"Your feminine-care routine is missing this.",
-    goLive: weekStart + 2*dayMs, time:"11:00 AM", deliveredAt: now - 2*HOURS,
+    title:"Your hygiene routine is missing this.",
+    goLive: weekStart + 2*dayMs, time:"11:00 AM", deliveredAt: REVISED_AT, revisedAt: REVISED_AT,
     slides:["content/product-education/slide-1.jpg","content/product-education/slide-2.jpg","content/product-education/slide-3.jpg","content/product-education/slide-4.jpg","content/product-education/slide-5.jpg","content/product-education/slide-6.jpg","content/product-education/slide-7.jpg"],
-    caption:"Your feminine-care routine is missing this. Panty Cakes is a pH-balanced feminine care oil that actually smells like cake, made for delicate areas with only 4 clean, USDA-organic ingredients.\n\nSwipe to see what it is, why women use it daily, how to use it, and why it has been a self-care staple since 2013. From pits to bra area to down south, Panty Cakes goes first.\n\nReady to have cake? Shop at mypantycakes.com — 1oz $27 · 0.5oz $17 · 3 for $35.",
+    caption:"Your hygiene routine is missing this. Panty Cakes is a pH-balanced personal care enhancer, a serum that actually smells like cake, made for all your delicate areas with only 4 clean, USDA-organic ingredients.\n\nSwipe to see what it is, why we use it daily, how to use it, and why it has been a self-care staple since 2013. From tops to bottoms, deep down south, Panty Cakes goes first.\n\nReady to have cake? Shop at mypantycakes.com — 1oz $27 · 0.5oz $17 · 3 for $35.",
     status:"review"
   },
   {
@@ -678,7 +682,8 @@ function smsFallback(kind, postTitle, message){
 
 function statusOf(p){
   const d = decisions[p.id];
-  if(d && d.status) return d.status;
+  // a corrected re-delivery (revisedAt) supersedes any older decision
+  if(d && d.status && (!p.revisedAt || (d.at||0) >= p.revisedAt)) return d.status;
   if(p.status==="review" && (now - p.deliveredAt) > REVIEW_WINDOW) return "scheduled";
   return p.status;
 }
